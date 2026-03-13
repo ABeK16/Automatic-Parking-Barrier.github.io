@@ -970,6 +970,14 @@ body {
 }
 #hr1in-3 {
   padding-bottom: 0px;
+  grid-template-columns: 1fr;
+  justify-items: center;
+  text-align: center;
+  padding-top: 0px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 40px;
+  padding-right: 40px;
 }
 #hr1ct-3 {
   padding-bottom: 0px;
