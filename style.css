@@ -976,6 +976,9 @@ body {
   margin-bottom: 0px;
   margin-top: 0px;
   padding-top: 27px;
+  align-items: center;
+  text-align: center;
+  flex-direction: column;
 }
 
 #pr1ct-3 {
