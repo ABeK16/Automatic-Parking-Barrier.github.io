@@ -371,16 +371,29 @@
     <footer id="ft1sc-3" data-ll-name="Footer" class="footer">
       <p id="ft1tx-3" class="footer-text">© 2026 Automated Parking Barrier. All rights reserved.</p>
     </footer>
-    <script id="sc1mn">
-      (function() {
-        /* FAQ Accordion */
-        var faqItems = document.querySelectorAll('.faq-question');
-        faqItems.forEach(function(btn) {
-          btn.addEventListener('click', function(e) {
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+      // ============================================================
+      // YOUR SUPABASE CREDENTIALS — fill these in!
+      // Find them: supabase.com → Your Project → Settings → API
+      // ============================================================
+      var SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
+      var SUPABASE_KEY = 'YOUR_ANON_PUBLIC_KEY';
+      // ============================================================
+
+      var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+      (function () {
+
+        /* ── FAQ Accordion ── */
+        document.querySelectorAll('.faq-question').forEach(function (btn) {
+          btn.addEventListener('click', function (e) {
             e.preventDefault();
             var item = this.closest('.faq-item');
             var isActive = item.classList.contains('active');
-            document.querySelectorAll('.faq-item.active').forEach(function(el) {
+            document.querySelectorAll('.faq-item.active').forEach(function (el) {
               el.classList.remove('active');
               el.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
             });
@@ -391,10 +404,11 @@
           });
         });
 
-        /* Form Submission */
+        /* ── Form ── */
         var formWrapper = document.getElementById('fm1fw-3');
-        var submitBtn = document.getElementById('bt1sb-3');
-        var successDiv = document.getElementById('fm1ok-3');
+        var submitBtn   = document.getElementById('bt1sb-3');
+        var successDiv  = document.getElementById('fm1ok-3');
+        var submitSpan  = document.getElementById('tx1sb-3');
 
         if (!formWrapper || !submitBtn) return;
 
@@ -409,6 +423,7 @@
         }
 
         function showError(inputEl, errorEl, show) {
+          if (!inputEl) return;
           if (show) {
             inputEl.classList.add('error');
             if (errorEl) errorEl.classList.add('visible');
@@ -420,77 +435,71 @@
 
         function validate() {
           var valid = true;
-          var name = getVal('name');
-          var nameInput = document.getElementById('in1nm-3');
-          var nameError = document.getElementById('er1nm-3');
-          if (!name) {
-            showError(nameInput, nameError, true);
-            valid = false;
-          } else {
-            showError(nameInput, nameError, false);
-          }
 
-          var email = getVal('email');
-          var emailInput = document.getElementById('in1em-3');
-          var emailError = document.getElementById('er1em-3');
-          var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          if (!email || !emailPattern.test(email)) {
-            showError(emailInput, emailError, true);
-            valid = false;
-          } else {
-            showError(emailInput, emailError, false);
-          }
+          var nameVal = getVal('name');
+          showError(document.getElementById('in1nm-3'), document.getElementById('er1nm-3'), !nameVal);
+          if (!nameVal) valid = false;
 
-          var units = getVal('units');
-          var unitsSelect = document.getElementById('sl1un-3');
-          var unitsError = document.getElementById('er1un-3');
-          if (!units) {
-            showError(unitsSelect, unitsError, true);
-            valid = false;
-          } else {
-            showError(unitsSelect, unitsError, false);
-          }
+          var emailVal = getVal('email');
+          var emailOk  = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal);
+          showError(document.getElementById('in1em-3'), document.getElementById('er1em-3'), !emailOk);
+          if (!emailOk) valid = false;
+
+          var unitsVal = getVal('units');
+          showError(document.getElementById('sl1un-3'), document.getElementById('er1un-3'), !unitsVal);
+          if (!unitsVal) valid = false;
 
           return valid;
         }
 
-        var inputs = formWrapper.querySelectorAll('input, select');
-        inputs.forEach(function(input) {
-          input.addEventListener('input', function() {
-            this.classList.remove('error');
-            var errorMsg = this.parentElement.querySelector('.form-error-msg') || this.closest('.form-group').querySelector('.form-error-msg');
-            if (errorMsg) errorMsg.classList.remove('visible');
-          });
-          input.addEventListener('change', function() {
-            this.classList.remove('error');
-            var errorMsg = this.parentElement.querySelector('.form-error-msg') || this.closest('.form-group').querySelector('.form-error-msg');
-            if (errorMsg) errorMsg.classList.remove('visible');
+        /* Clear errors on interaction */
+        formWrapper.querySelectorAll('input, select').forEach(function (input) {
+          ['input', 'change'].forEach(function (evt) {
+            input.addEventListener(evt, function () {
+              this.classList.remove('error');
+              var grp = this.closest('.form-group');
+              var errEl = grp && grp.querySelector('.form-error-msg');
+              if (errEl) errEl.classList.remove('visible');
+            });
           });
         });
 
-        submitBtn.addEventListener('click', function(e) {
+        /* Submit */
+        submitBtn.addEventListener('click', function (e) {
           e.preventDefault();
           if (!validate()) return;
+
+          /* Disable button while submitting */
+          submitBtn.style.opacity = '0.7';
+          submitBtn.style.pointerEvents = 'none';
+          if (submitSpan) submitSpan.textContent = 'Sending…';
+
           var payload = {
-            name: getVal('name'),
-            email: getVal('email'),
-            phone: getVal('phone'),
-            units: getVal('units'),
-            installation: getVal('installation'),
-            timeline: getVal('timeline')
+            name:         getVal('name'),
+            email:        getVal('email'),
+            phone:        getVal('phone')        || null,
+            units:        getVal('units'),
+            installation: getVal('installation') || null,
+            timeline:     getVal('timeline')     || null
           };
-          document.dispatchEvent(new CustomEvent('ll-custom-form-submit', {
-            detail: payload
-          }));
-          formWrapper.style.display = 'none';
-          successDiv.classList.add('active');
-          successDiv.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center'
+
+          supabaseClient.from('pre_orders').insert([payload]).then(function(result) {
+            if (result.error) {
+              console.error('Supabase error:', result.error);
+              submitBtn.style.opacity = '';
+              submitBtn.style.pointerEvents = '';
+              if (submitSpan) submitSpan.textContent = 'Reserve My Spot — No Commitment';
+              alert('Something went wrong. Please try again.');
+              return;
+            }
+            /* Success */
+            formWrapper.style.display = 'none';
+            successDiv.classList.add('active');
+            successDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
           });
         });
-      })();
 
+      })();
     </script>
   </body>
 </html>
