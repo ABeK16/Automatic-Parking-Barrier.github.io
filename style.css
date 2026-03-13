@@ -977,9 +977,7 @@ body {
   margin-top: 0px;
   padding-top: 27px;
 }
-#fq1p1 {
-  display: none;
-}
+
 #pr1ct-3 {
   background: linear-gradient(135deg, var(--ll-color-secondary) 100%, rgb(21, 88, 184) 100%);
 }
