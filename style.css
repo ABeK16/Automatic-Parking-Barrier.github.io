@@ -1,5 +1,5 @@
 :root {
-  --ll-color-primary: #1E1E1EFF;
+  --ll-color-primary: #1B6DE0;
   --ll-color-primary-dark: #1558B8;
   --ll-color-primary-light: #E8F1FD;
   --ll-color-secondary: #F59E0B;
@@ -1002,7 +1002,7 @@ body {
   padding-top: 12px;
 }
 #i95mgj {
-  width: 533px;
+  width: 100%;
 }
 #imiyhx {
   width: 100%;
@@ -1010,7 +1010,9 @@ body {
   object-fit: contain;
 }
 #vd1sb {
-  width: 45.852%;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
 }
 #pn1gr-3 {
   margin-top: 0px;
